@@ -22,13 +22,13 @@ public class Adviser {
     @Column(name="name")
     public String name;
 
-    @Column(name="telegramId")
+    @Column(name="telegram_id")
     private String telegramId;
 
-    @Column(name="instagramId")
+    @Column(name="instagram_id")
     private String instagramId;
 
-    @Column(name="youtubeId")
+    @Column(name="youtube_id")
     private String youtubeId;
 
     @Column(name="contact")
@@ -40,14 +40,13 @@ public class Adviser {
     @Column(name="phone")
     private String phone;
 
-
-    @Column(name="instagramRatings")
+    @Column(name="instagram_ratings")
     private String instagramRatings;
 
-    @Column(name="telegramRatings")
+    @Column(name="telegram_ratings")
     private String telegramRatings;
 
-    @Column(name="youtubeRatings")
+    @Column(name="youtube_ratings")
     private String youtubeRatings;
 
     @Column(name="ratings")
@@ -59,7 +58,7 @@ public class Adviser {
     @Column(name="type")
     private String type;
 
-    @Column(name="websiteLink")
+    @Column(name="website_link")
     private String websiteLink;
 
 }
