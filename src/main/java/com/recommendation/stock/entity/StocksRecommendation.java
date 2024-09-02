@@ -21,41 +21,41 @@ public class StocksRecommendation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="shareName")
+    @Column(name="share_name")
     private String shareName;
 
     @ManyToOne
-    @JoinColumn(name = "adviserId")
+    @JoinColumn(name = "adviser_id")
     private Adviser adviser;
 
-    @Column(name="entryPrice")
+    @Column(name="entry_price")
     private Double entryPrice;
 
-    @Column(name="recommendationDateTime")
+    @Column(name="recommendation_date_time")
     private Timestamp recommendationDateTime;
 
-    @Column(name="targetPrice")
+    @Column(name="target_price")
     private Double targetPrice;
 
     @Column(name="stoploss")
     private String stoploss;
 
-    @Column(name="timePeriod")
+    @Column(name="time_period")
     private String timePeriod;
 
-    @Column(name="recommendationReason")
+    @Column(name="recommendation_reason")
     private String recommendationReason;
 
-    @Column(name="currentPrice")
+    @Column(name="current_price")
     private Double currentPrice;
 
-    @Column(name="nseId")
+    @Column(name="nse_id")
     private String nseId;
 
-    @Column(name="bseId")
+    @Column(name="bse_id")
     private String bseId;
 
-    @Column(name="sourceLink")
+    @Column(name="source_link")
     private String sourceLink;
 
 }
