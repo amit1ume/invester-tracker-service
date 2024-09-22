@@ -12,8 +12,7 @@ import java.util.List;
 @Repository
 public interface StocksRecommendationRepository extends JpaRepository<StocksRecommendation, Long> {
 
-    @Query(value = "select * from adviser where adviser=:adv",nativeQuery = true)
-    public List<StocksRecommendation> findByAdviser(@Param("adv") Adviser adviser);
+    public List<StocksRecommendation> findByAdviser(Adviser adviser);
 
 
 }

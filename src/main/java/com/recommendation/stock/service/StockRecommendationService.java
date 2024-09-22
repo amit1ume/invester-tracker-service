@@ -39,6 +39,11 @@ public class StockRecommendationService {
         Adviser adviser = new Adviser();
         adviser.setId(adviserId);
         List<StocksRecommendation> stocksRecommendations = stocksRecommendationRepository.findByAdviser(adviser);
+        stocksRecommendations.forEach(stocksRecommendation ->{
+            if(stocksRecommendation.getStatus() == null){
+
+            }
+        });
         List<StocksRecommendationDto> stocksRecommendationDtos = new ArrayList<>();
         stocksRecommendations.forEach(stocksRecommendation -> stocksRecommendationDtos.add(convertStockRecommendationEntityToDto(stocksRecommendation)));
         return stocksRecommendationDtos;
@@ -65,6 +70,14 @@ public class StockRecommendationService {
                 date.setTime(stocksRecommendation.getRecommendationDateTime().getTime());
                 stocksRecommendationDto.setRecommendationDateTime(dateFormat.format(date));
             }
+            if (stocksRecommendation.getCloseTime() != null) {
+                Date date = new Date();
+                date.setTime(stocksRecommendation.getCloseTime().getTime());
+                stocksRecommendationDto.setCloseTime(dateFormat.format(date));
+            }
+            stocksRecommendationDto.setStatus(stocksRecommendation.getStatus());
+            stocksRecommendationDto.setProfit(stocksRecommendation.getProfit());
+
             return stocksRecommendationDto;
         }
         return null;

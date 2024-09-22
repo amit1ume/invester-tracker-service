@@ -40,4 +40,9 @@ public class StocksRecommendationDto {
 
     private String bseId;
     private String sourceLink;
+
+    private String status;
+
+    private String closeTime;
+    private Double profit;
 }

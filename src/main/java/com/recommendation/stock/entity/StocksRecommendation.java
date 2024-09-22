@@ -58,4 +58,13 @@ public class StocksRecommendation {
     @Column(name="source_link")
     private String sourceLink;
 
+    @Column(name="status")
+    private String status;
+
+    @Column(name="close_time")
+    private Timestamp closeTime;
+
+    @Column(name="profit")
+    private Double profit;
+
 }
