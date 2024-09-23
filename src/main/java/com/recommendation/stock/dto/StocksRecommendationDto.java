@@ -27,7 +27,7 @@ public class StocksRecommendationDto {
     private Double targetPrice;
 
     @Nullable
-    private String stoploss;
+    private Double stoploss;
 
     private String timePeriod;
 
