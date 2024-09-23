@@ -38,7 +38,7 @@ public class StocksRecommendation {
     private Double targetPrice;
 
     @Column(name="stoploss")
-    private String stoploss;
+    private Double stoploss;
 
     @Column(name="time_period")
     private String timePeriod;
