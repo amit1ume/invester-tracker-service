@@ -1,5 +1,6 @@
 package com.recommendation.stock.service;
 
+import com.recommendation.stock.common.StatusEnum;
 import com.recommendation.stock.dto.StocksRecommendationDto;
 import com.recommendation.stock.entity.Adviser;
 import com.recommendation.stock.entity.StocksRecommendation;
@@ -7,12 +8,14 @@ import com.recommendation.stock.repository.StocksRecommendationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class StockRecommendationService {
@@ -21,6 +24,9 @@ public class StockRecommendationService {
 
     @Autowired
     private AdviserService adviserService;
+
+    @Autowired
+    private StockService stockService;
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -39,9 +45,44 @@ public class StockRecommendationService {
         Adviser adviser = new Adviser();
         adviser.setId(adviserId);
         List<StocksRecommendation> stocksRecommendations = stocksRecommendationRepository.findByAdviser(adviser);
-        stocksRecommendations.forEach(stocksRecommendation ->{
-            if(stocksRecommendation.getStatus() == null){
-
+        stocksRecommendations.forEach(stocksRecommendation -> {
+            if (stocksRecommendation.getStatus() == null && stocksRecommendation.getEntryPrice() != null) {
+                if (stocksRecommendation.getRecommendationDateTime() != null) {
+                    Date date1 = new Date();
+                    date1.setTime(stocksRecommendation.getRecommendationDateTime().getTime());
+                    Date date2 = new Date();
+                    long diff = date2.getTime() - date1.getTime();
+                    long daysDifference = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+                    if (stocksRecommendation.getNseId() != null && stocksRecommendation.getNseId().trim() != "") {
+                        try {
+                            String currentPriceString = stockService.getNSEInfyStockCurrentValue(stocksRecommendation.getNseId());
+                            if (currentPriceString != null && currentPriceString != "") {
+                                Double currentPrice = Double.parseDouble(currentPriceString.substring(1).replaceAll(",", ""));
+                                stocksRecommendation.setCurrentPrice(currentPrice);
+                                stocksRecommendation.setProfit((currentPrice - stocksRecommendation.getEntryPrice()) * 100.0D / stocksRecommendation.getEntryPrice());
+                                if (stocksRecommendation.getTimePeriod() != null &&
+                                        (stocksRecommendation.getTimePeriod().equalsIgnoreCase("SHORT") && daysDifference > 90
+                                 || stocksRecommendation.getTimePeriod().equalsIgnoreCase("MEDIUM") && daysDifference > 180
+                                 || stocksRecommendation.getTimePeriod().equalsIgnoreCase("LONG") && daysDifference > 180)) {
+                                    stocksRecommendation.setStatus(StatusEnum.TIME_COMPLETION.getValue());
+                                } else {
+                                    if (stocksRecommendation.getTargetPrice() != null || stocksRecommendation.getStoploss() == null) {
+                                        stocksRecommendation.setTargetPrice(stocksRecommendation.getTargetPrice() == null
+                                                ? (stocksRecommendation.getEntryPrice() * 1.20) : stocksRecommendation.getTargetPrice());
+                                        if (currentPrice >= stocksRecommendation.getTargetPrice()) {
+                                            stocksRecommendation.setStatus(StatusEnum.TARGET_HIT.getValue());
+                                        }
+                                    } else if (currentPrice <= stocksRecommendation.getStoploss()) {
+                                        stocksRecommendation.setStatus(StatusEnum.SL_HIT.getValue());
+                                    }
+                                }
+                                stocksRecommendationRepository.save(stocksRecommendation);
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
             }
         });
         List<StocksRecommendationDto> stocksRecommendationDtos = new ArrayList<>();
