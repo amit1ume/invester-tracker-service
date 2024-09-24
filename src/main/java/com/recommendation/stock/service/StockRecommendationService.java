@@ -63,18 +63,19 @@ public class StockRecommendationService {
                                 if (stocksRecommendation.getTimePeriod() != null &&
                                         (stocksRecommendation.getTimePeriod().equalsIgnoreCase("SHORT") && daysDifference > 90
                                  || stocksRecommendation.getTimePeriod().equalsIgnoreCase("MEDIUM") && daysDifference > 180
-                                 || stocksRecommendation.getTimePeriod().equalsIgnoreCase("LONG") && daysDifference > 180)) {
+                                 || stocksRecommendation.getTimePeriod().equalsIgnoreCase("LONG") && daysDifference > 365)) {
                                     stocksRecommendation.setStatus(StatusEnum.TIME_COMPLETION.getValue());
                                 } else {
-                                    if (stocksRecommendation.getTargetPrice() != null || stocksRecommendation.getStoploss() == null) {
                                         stocksRecommendation.setTargetPrice(stocksRecommendation.getTargetPrice() == null
                                                 ? (stocksRecommendation.getEntryPrice() * 1.20) : stocksRecommendation.getTargetPrice());
+                                        stocksRecommendation.setStoploss(stocksRecommendation.getStoploss() == null
+                                            ? (stocksRecommendation.getEntryPrice() * 0.9) : stocksRecommendation.getStoploss());
                                         if (currentPrice >= stocksRecommendation.getTargetPrice()) {
                                             stocksRecommendation.setStatus(StatusEnum.TARGET_HIT.getValue());
+                                        } else if (currentPrice <= stocksRecommendation.getStoploss()) {
+                                            stocksRecommendation.setStatus(StatusEnum.SL_HIT.getValue());
                                         }
-                                    } else if (currentPrice <= stocksRecommendation.getStoploss()) {
-                                        stocksRecommendation.setStatus(StatusEnum.SL_HIT.getValue());
-                                    }
+
                                 }
                                 stocksRecommendationRepository.save(stocksRecommendation);
                             }
