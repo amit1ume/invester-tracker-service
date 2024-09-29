@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +58,7 @@ public class StockRecommendationService {
                         try {
                             String currentPriceString = stockService.getNSEInfyStockCurrentValue(stocksRecommendation.getNseId());
                             if (currentPriceString != null && currentPriceString != "") {
+
                                 Double currentPrice = Double.parseDouble(currentPriceString.substring(1).replaceAll(",", ""));
                                 stocksRecommendation.setCurrentPrice(currentPrice);
                                 stocksRecommendation.setProfit((currentPrice - stocksRecommendation.getEntryPrice()) * 100.0D / stocksRecommendation.getEntryPrice());
@@ -65,19 +67,32 @@ public class StockRecommendationService {
                                  || stocksRecommendation.getTimePeriod().equalsIgnoreCase("MEDIUM") && daysDifference > 180
                                  || stocksRecommendation.getTimePeriod().equalsIgnoreCase("LONG") && daysDifference > 365)) {
                                     stocksRecommendation.setStatus(StatusEnum.TIME_COMPLETION.getValue());
+                                    stocksRecommendation.setCloseTime(new Timestamp(date2.getTime()));
+                                    stocksRecommendationRepository.save(stocksRecommendation);
                                 } else {
                                         stocksRecommendation.setTargetPrice(stocksRecommendation.getTargetPrice() == null
                                                 ? (stocksRecommendation.getEntryPrice() * 1.20) : stocksRecommendation.getTargetPrice());
                                         stocksRecommendation.setStoploss(stocksRecommendation.getStoploss() == null
                                             ? (stocksRecommendation.getEntryPrice() * 0.9) : stocksRecommendation.getStoploss());
-                                        if (currentPrice >= stocksRecommendation.getTargetPrice()) {
+
+                                    String dayPriceRangeString = stockService.getNSEStockDayRangeValue(stocksRecommendation.getNseId());
+                                    List<String> minMaxPriceList = Arrays.asList(dayPriceRangeString.split("\\s*-\\s*"));
+                                    double dayLowPrice = Double.parseDouble(minMaxPriceList.get(0).substring(1).replaceAll(",", ""));
+                                    double dayHighPrice = Double.parseDouble(minMaxPriceList.get(1).substring(1).replaceAll(",", ""));
+                                        if (dayLowPrice <= stocksRecommendation.getTargetPrice() && dayHighPrice >= stocksRecommendation.getTargetPrice()) {
                                             stocksRecommendation.setStatus(StatusEnum.TARGET_HIT.getValue());
-                                        } else if (currentPrice <= stocksRecommendation.getStoploss()) {
+                                            stocksRecommendation.setCloseTime(new Timestamp(date2.getTime()));
+                                            stocksRecommendation.setProfit((stocksRecommendation.getTargetPrice() - stocksRecommendation.getEntryPrice()) * 100.0D / stocksRecommendation.getEntryPrice());
+                                            stocksRecommendationRepository.save(stocksRecommendation);
+                                        } else if (dayLowPrice <= stocksRecommendation.getStoploss() && dayHighPrice >= stocksRecommendation.getStoploss()) {
                                             stocksRecommendation.setStatus(StatusEnum.SL_HIT.getValue());
+                                            stocksRecommendation.setCloseTime(new Timestamp(date2.getTime()));
+                                            stocksRecommendation.setProfit((stocksRecommendation.getStoploss()  - stocksRecommendation.getEntryPrice()) * 100.0D / stocksRecommendation.getEntryPrice());
+                                            stocksRecommendationRepository.save(stocksRecommendation);
                                         }
 
                                 }
-                                stocksRecommendationRepository.save(stocksRecommendation);
+
                             }
                         } catch (IOException e) {
                             throw new RuntimeException(e);

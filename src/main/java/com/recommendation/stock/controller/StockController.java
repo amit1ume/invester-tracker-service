@@ -23,4 +23,9 @@ public class StockController {
     public String getBOMInfyStockValue() throws IOException {
         return stockService.getBOMInfyStockCurrentValue();
     }
+
+    @GetMapping({"nse", "/nse/range/{id}"})
+    public String getNSEStockDayRangeValue(@PathVariable String id) throws IOException {
+        return stockService.getNSEStockDayRangeValue(id);
+    }
 }
